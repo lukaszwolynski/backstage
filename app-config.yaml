@@ -1,0 +1,79 @@
+app:
+  title: DevOps Toolkit Backstage App
+  baseUrl: http://localhost:3000
+organization:
+  name: DevOps Toolkit
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+    upgrade-insecure-requests: false
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  database:
+    client: better-sqlite3
+    connection: ':memory:'
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+proxy:
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'docker'
+  publisher:
+    type: 'local'
+auth:
+  providers:
+    guest: {}
+scaffolder:
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location, Template]
+  locations:
+    - type: file
+      target: ../../examples/entities.yaml
+    - type: file
+      target: ../../examples/template/template.yaml
+      rules:
+        - allow: [Template]
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]
+  providers:
+    github:
+      catalogInfo:
+        organization: ${GITHUB_USER}
+        catalogPath: /catalog-info.yaml
+        filters:
+          branch: main
+          repository: backstage-demo
+        schedule:
+          frequency: {minutes: 30}
+          timeout: {minutes: 3}
+      templates:
+        organization: ${GITHUB_USER}
+        catalogPath: /backstage-template.yaml
+        filters:
+          branch: main
+          repository: backstage-demo
+        schedule:
+          frequency: {minutes: 30}
+          timeout: {minutes: 3}
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters: []
+permission:
+  enabled: true
